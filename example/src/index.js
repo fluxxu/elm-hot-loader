@@ -2,13 +2,21 @@
 
 require('./index.html');
 var Elm = require('./Main');
+var Elm2 = require('./Nested/Main');
 
-var elm = Elm.fullscreen(Elm.Main, { swap: false });
+var left = document.getElementById('left');
+var right = document.getElementById('right');
+var logs = document.getElementById('logs');
 
-//interop
-elm.ports.logs.subscribe(function(log) {
+function appendLog(source, log) {
   var node = document.createElement('div');
   node.style.color = 'red';
-  node.innerHTML = 'JS log: ' + log + ', time = ' + Date.now();
-  document.body.appendChild(node);
-});
+  node.innerHTML = '[' + source + '] ' + log + ', time = ' + Date.now();
+  logs.appendChild(node);
+}
+
+var elmLeft = Elm.embed(Elm.Main, left, { swap: false });
+elmLeft.ports.logs.subscribe(appendLog.bind(null, 'Elm.Main'));
+
+var elmRight = Elm2.embed(Elm2.Nested.Main, right, { swap: false });
+elmRight.ports.logs.subscribe(appendLog.bind(null, 'Elm.Nested.Main'));

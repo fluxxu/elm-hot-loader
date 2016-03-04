@@ -1,6 +1,15 @@
 if (module.hot) {
-  //try {
-    (function() {
+  //Export Elm if not exported
+  try {
+    if (module.exports !== Elm) {
+      module.exports = Elm;
+    }
+  } catch (e) {
+    throw new Error('[elm-hot] Can not find exported Elm.');
+  }
+
+  try {
+    (function(originalElm) {
       "use strict";
       var instances = module.hot && module.hot.data
         ? module.hot.data.instances || {}
@@ -9,7 +18,7 @@ if (module.hot) {
         ? module.hot.uid || 0
         : 0;
 
-      var Elm = wrapElm(module.exports);
+      var Elm = wrapElm(originalElm);
 
       module.hot.accept();
       module.hot.dispose(function(data) {
@@ -19,11 +28,16 @@ if (module.hot) {
 
       Object.keys(instances).forEach(function(id) {
         var instance = instances[id];
-        console.log('[elm-hot] Swapping module: ' + instance.name + '#' + id);
+        var path = instance.name;
+        console.log('[elm-hot] Swapping module: ' + path + '#' + id);
         var oldElm = instance.elm;
         var hookedDispose = oldElm.dispose;
-        oldElm.dispose = hookedDispose.original;
-        var newElm = instance.elm = oldElm.swap(Elm[instance.name]);
+        var newModule = getModule(Elm, path);
+        if (!newModule) {
+          console.error('[elm-hot] module to swap not found, path: ' + path);
+          return
+        }
+        var newElm = instance.elm = oldElm.swap(newModule);
         hookedDispose.original = newElm.dispose;
         newElm.dispose = hookedDispose;
 
@@ -38,7 +52,7 @@ if (module.hot) {
               if (!handlers.length) {
                 return;
               }
-              console.log('[elm-hot] Reconnect ' + handlers.length + ' handler(s) to port \'' + name + '\'.');
+              console.log('[elm-hot] Reconnect ' + handlers.length + ' handler(s) to port \'' + name + '\' (' + path + ').');
               handlers.forEach(function(handler) {
                 newElm.ports[name].subscribe(handler);
               });
@@ -58,11 +72,54 @@ if (module.hot) {
 
       module.exports = Elm;
 
-      function wrapElm(Elm) {
-        var embed = Elm.embed;
-        var fullscreen = Elm.fullscreen;
+      function getModule(elm, path) {
+        var parts = path.split('.');
+        var parent = elm;
+        var part, prop;
+        for (var i = 0; i < parts.length; i++) {
+          part = parts[i];
+          prop = parent[part];
+          if (prop && typeof prop === 'object') {
+            parent = prop;
+          } else {
+            parent = null;
+            break;
+          }
+        }
+        return parent;
+      }
 
-        return Object.assign(Elm, {
+      function findModulePath(elm, module) {
+         var path = find('', elm, module);
+         if (!path) {
+           throw new Error('[elm-hot] Can not resolve module path inside elm instance.')
+         }
+         console.log('[elm-hot] module found at Elm.' + path)
+         return path;
+
+         function find(path, parent, module) {
+          var prop, propPath, nested;
+          for (var key in parent) {
+            prop = parent[key]
+            propPath = path 
+              ? path + '.' + key
+              : key;
+            if (prop === module) {
+              return propPath
+            } else {
+              if (prop && typeof prop === 'object') {
+                nested = find(propPath, prop, module)
+                if (nested) {
+                  return nested
+                }
+              }
+            }
+          }
+         }
+      }
+
+      function wrapElm(Elm) {       
+        return Object.assign({}, Elm, {
           embed: function(module, container, config) {
             return wrap(module, container, config);
           },
@@ -77,9 +134,12 @@ if (module.hot) {
 
         function wrap(module, container, config) {
           var id = getUID();
+          var embed = originalElm.embed;
+          var fullscreen = originalElm.fullscreen;
 
           //find module name
-          var name = Object.keys(Elm).find(function (name) { return Elm[name] === module});
+          var name = findModulePath(Elm, module)
+
           var elm = container 
             ? embed(module, container, config) 
             : fullscreen(module, config);
@@ -144,11 +204,9 @@ if (module.hot) {
         }
         return portSubscribes;
       }
-    })();
-  /*
+    })(module.exports);
   } catch (e) {
     console.error('[elm-hot] crashed. Please report this to https://github.com/fluxxu/elm-hot-loader/issues');
     console.error(e);
   }
-  */
 }

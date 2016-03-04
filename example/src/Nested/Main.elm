@@ -1,3 +1,5 @@
+module Nested.Main where
+
 import Effects exposing (Never)
 import Counter
 import StartApp
@@ -60,9 +62,9 @@ update action model =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   div []
-    [ text "counter (Elm.Main):"
+    [ text "counter (Elm.Nestd.Main):"
     , Counter.view (Signal.forwardTo address CounterAction) model.counter 
-    , text "logs:"
+    , text "log:"
     , button [ onClick address (AppendLog (getLog model)) ] 
         [ text "append log" ]
     , ul [] (List.map (\log -> li [] [ text log ]) model.logs)
