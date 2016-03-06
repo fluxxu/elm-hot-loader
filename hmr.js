@@ -33,11 +33,33 @@ if (module.hot) {
         var oldElm = instance.elm;
         var hookedDispose = oldElm.dispose;
         var newModule = getModule(Elm, path);
+        var i;
         if (!newModule) {
           console.error('[elm-hot] module to swap not found, path: ' + path);
           return
         }
+
+        //copy id and class: https://github.com/fluxxu/elm-hot-loader/issues/5
+        var container = instance.container;
+        var containerParent = instance.container.parentNode;
+        var containerIndex = -1;
+        var containerClass = container.className, containerId = container.id;
+        for (i = 0; i < container.parentNode.childNodes.length; i++) {
+          if (container.parentNode.childNodes[i] === container) {
+            containerIndex = i;
+          }
+        }
+        if (containerIndex === -1) {
+          console.error('[elm-hot] Can not find container.');
+          return
+        }
+
         var newElm = instance.elm = oldElm.swap(newModule);
+        
+        instance.container = containerParent.childNodes[containerIndex];
+        instance.container.className = containerClass;
+        instance.container.id = containerId;
+
         hookedDispose.original = newElm.dispose;
         newElm.dispose = hookedDispose;
 
@@ -158,6 +180,7 @@ if (module.hot) {
           instances[id] = {
             elm: elm,
             name: name,
+            container,
             portSubscribes: wrapPorts(elm, {})
           };
 
