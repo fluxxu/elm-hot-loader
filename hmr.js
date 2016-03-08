@@ -41,24 +41,30 @@ if (module.hot) {
 
         //copy id and class: https://github.com/fluxxu/elm-hot-loader/issues/5
         var container = instance.container;
-        var containerParent = instance.container.parentNode;
-        var containerIndex = -1;
-        var containerClass = container.className, containerId = container.id;
-        for (i = 0; i < container.parentNode.childNodes.length; i++) {
-          if (container.parentNode.childNodes[i] === container) {
-            containerIndex = i;
+        var containerParent, containerIndex, containerClass, containerId;
+        if (container) {
+          containerParent = instance.container.parentNode;
+          containerIndex = -1;
+          containerClass = container.className;
+          containerId = container.id;
+          for (i = 0; i < container.parentNode.childNodes.length; i++) {
+            if (container.parentNode.childNodes[i] === container) {
+              containerIndex = i;
+            }
           }
-        }
-        if (containerIndex === -1) {
-          console.error('[elm-hot] Can not find container.');
-          return
+          if (containerIndex === -1) {
+            console.error('[elm-hot] Can not find container.');
+            return
+          }
         }
 
         var newElm = instance.elm = oldElm.swap(newModule);
         
-        instance.container = containerParent.childNodes[containerIndex];
-        instance.container.className = containerClass;
-        instance.container.id = containerId;
+        if (container) {
+          instance.container = containerParent.childNodes[containerIndex];
+          instance.container.className = containerClass;
+          instance.container.id = containerId;
+        }
 
         hookedDispose.original = newElm.dispose;
         newElm.dispose = hookedDispose;
@@ -122,10 +128,8 @@ if (module.hot) {
          function find(path, parent, module) {
           var prop, propPath, nested;
           for (var key in parent) {
-            prop = parent[key]
-            propPath = path 
-              ? path + '.' + key
-              : key;
+            prop = parent[key];
+            propPath = path ? (path + '.' + key) : key;
             if (prop === module) {
               return propPath
             } else {
