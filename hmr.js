@@ -184,7 +184,7 @@ if (module.hot) {
           instances[id] = {
             elm: elm,
             name: name,
-            container,
+            container: container,
             portSubscribes: wrapPorts(elm, {})
           };
 
