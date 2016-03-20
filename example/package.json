@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "elm-hot-loader": "^0.1.0",
+    "elm-hot-loader": "0.x.x",
     "elm-webpack-loader": "^2.0.0",
     "file-loader": "^0.8.5",
     "style-loader": "^0.13.0",
