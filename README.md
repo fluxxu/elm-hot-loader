@@ -29,6 +29,8 @@ module.exports = {
 };
 ```
 
+You should also add the `--hot` flag when starting webpack.
+
 ## Notes
 
 ### swap port and Empty action
@@ -57,6 +59,12 @@ app =
     , view = view
     , inputs = [ swapsignal ] -- add swap signal as an input
     }
+```
+
+`swap` also needs to be initialized at the point where your app is embedded:
+
+```javscript
+var app = Elm.embed(Elm.Main, mountNode, { swap: true });
 ```
 
 ### Dependency
