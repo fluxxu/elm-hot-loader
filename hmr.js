@@ -1,13 +1,4 @@
 if (module.hot) {
-  //Export Elm if not exported
-  try {
-    if (module.exports !== Elm) {
-      module.exports = Elm;
-    }
-  } catch (e) {
-    throw new Error('[elm-hot] Can not find exported Elm.');
-  }
-
   try {
     (function(originalElm) {
       "use strict";
