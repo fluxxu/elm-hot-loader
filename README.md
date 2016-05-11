@@ -69,7 +69,7 @@ var app = Elm.embed(Elm.Main, mountNode, { swap: true });
 
 ### Dependency
 
-This loader relies on elm-webpack-loader to compile ELM to JS.
+This loader relies on elm-webpack-loader to compile Elm to JS.
 
 ### Example
 
