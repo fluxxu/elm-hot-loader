@@ -39,7 +39,7 @@ After hot swapping, elm-hot-load will call 'swap' port to trigger a re-render.
 So in your elm main module, you should define something like:
 
 ```elm
-type Action 
+type Action
   = Empty -- this action does not modify model, just to trigger a re-render
   | CounterAction Counter.Action
 
@@ -50,7 +50,7 @@ port swap : Signal Bool
 swapsignal : Signal Action
 swapsignal =
   Signal.map (\_ -> Empty) swap
-  
+
 app : StartApp.App Model
 app =
   StartApp.start
@@ -69,7 +69,7 @@ var app = Elm.embed(Elm.Main, mountNode, { swap: true });
 
 ### Dependency
 
-This loader relies on elm-webpack-loader to compile ELM to JS.
+This loader relies on elm-webpack-loader to compile Elm to JS.
 
 ### Example
 

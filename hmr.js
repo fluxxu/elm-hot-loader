@@ -1,13 +1,4 @@
 if (module.hot) {
-  //Export Elm if not exported
-  try {
-    if (module.exports !== Elm) {
-      module.exports = Elm;
-    }
-  } catch (e) {
-    throw new Error('[elm-hot] Can not find exported Elm.');
-  }
-
   try {
     (function(originalElm) {
       "use strict";
@@ -59,7 +50,7 @@ if (module.hot) {
         }
 
         var newElm = instance.elm = oldElm.swap(newModule);
-        
+
         if (container) {
           instance.container = containerParent.childNodes[containerIndex];
           instance.container.className = containerClass;
@@ -144,7 +135,7 @@ if (module.hot) {
          }
       }
 
-      function wrapElm(Elm) {       
+      function wrapElm(Elm) {
         return Object.assign({}, Elm, {
           embed: function(module, container, config) {
             return wrap(module, container, config);
@@ -166,8 +157,8 @@ if (module.hot) {
           //find module name
           var name = findModulePath(Elm, module)
 
-          var elm = container 
-            ? embed(module, container, config) 
+          var elm = container
+            ? embed(module, container, config)
             : fullscreen(module, config);
 
           //hook dispose
