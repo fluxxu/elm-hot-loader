@@ -125,7 +125,7 @@ if (module.hot) {
       while (domNode.lastChild) {
         domNode.removeChild(domNode.lastChild);
       }
-      
+
       var m = getPublicModule(instance.path)
       var elm;
       if (m) {
@@ -160,7 +160,7 @@ if (module.hot) {
     }
 
     function wrapPorts(elm, portSubscribes) {
-      var portNames = Object.keys(elm.ports);
+      var portNames = Object.keys(elm.ports || {});
       //hook ports
       if (portNames.length) {
         portNames
