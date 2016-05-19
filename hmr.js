@@ -3,9 +3,11 @@ if (module.hot) {
   (function(Elm) {
     "use strict";
 
-    var programWithFlags = _elm_lang$virtual_dom$VirtualDom$programWithFlags;
-
-    if (!programWithFlags) {
+    var programWithFlags;
+    
+    try {
+      programWithFlags = _elm_lang$virtual_dom$VirtualDom$programWithFlags;
+    } catch (_) {
       console.warn('[elm-hot] Hot-swapping disabled because VirtualDom module was not found.')
       return;
     }
