@@ -27,6 +27,12 @@ if (module.hot) {
     module.hot.dispose(function(data) {
       data.instances = instances;
       data.uid = uid;
+
+      // disable current instance
+      _elm_lang$core$Native_Scheduler.nativeBinding = function() {
+        return _elm_lang$core$Native_Scheduler.fail(new Error('[elm-hot] Inactive Elm instance.'))
+      }
+
       if (cancellers.length) {
         console.log('[elm-hot] Killing ' + cancellers.length + ' running processes...');
         try {
