@@ -52,5 +52,3 @@ This loader relies on elm-webpack-loader to compile Elm to JS.
 
 You can find an example project at
 [elm-hot-loader-starter](https://github.com/fluxxu/elm-hot-loader-starter). 
-
-![Screenshot](https://raw.githubusercontent.com/fluxxu/elm-hot-loader/master/example/example.gif)
