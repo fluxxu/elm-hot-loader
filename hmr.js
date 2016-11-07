@@ -160,10 +160,13 @@ if (module.hot) {
       var m = getPublicModule(instance.path)
       var elm;
       if (m) {
+        var flags = Object.assign({}, instance.flags, {
+          __hotSwapped: true
+        })
         if (instance.isFullscreen) {
-          elm = m.fullscreen(instance.flags);
+          elm = m.fullscreen(flags);
         } else {
-          elm = m.embed(domNode, instance.flags);
+          elm = m.embed(domNode, flags);
         }
 
         instance.elmProxy.ports = elm.ports;
