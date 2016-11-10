@@ -106,14 +106,35 @@ if (module.hot) {
 
     function registerInstance(domNode, flags, path, portSubscribes) {
       var id = getId();
-      return instances[id] = {
+
+      const instance = {
         id: id,
         path: path,
         domNode: domNode,
         flags: flags,
         portSubscribes: portSubscribes,
-        elmProxy: null
-      };
+        elmProxy: null,
+        lastState: null, // last elm app state
+        callbacks: []
+      }
+
+      instance.subscribe = function (cb) {
+        instance.callbacks.push(cb)
+        return function () {
+          instance.callbacks.splice(instance.callbacks.indexOf(cb), 1)
+        }
+      }
+
+      instance.dispatch = function (event) {
+        instance.callbacks.forEach(function (cb) {
+          cb(event, {
+            flags: instance.flags,
+            state: instance.lastState
+          })
+        })
+      }
+
+      return instances[id] = instance
     }
 
     function wrapPublicModule(path, module) {
@@ -122,11 +143,14 @@ if (module.hot) {
       module.embed = function(domNode, flags) {
         var elm;
         var portSubscribes = {};
-        initializingInstance = registerInstance(domNode, flags, path, portSubscribes)
+        initializingInstance = registerInstance(domNode, flags, path, portSubscribes)        
         elm = embed(domNode, flags);
         wrapPorts(elm, portSubscribes)
         elm = initializingInstance.elmProxy = {
-          ports: elm.ports
+          ports: elm.ports,
+          hot: {
+            subscribe: initializingInstance.subscribe
+          }
         };
         initializingInstance = null;
         return elm;
@@ -135,11 +159,14 @@ if (module.hot) {
       module.fullscreen = function (flags) {
         var elm
         var portSubscribes = {};
-        initializingInstance = registerInstance(document.body, flags, path, portSubscribes)
+        initializingInstance = registerInstance(document.body, flags, path, portSubscribes)        
         elm = fullscreen(flags);
         wrapPorts(elm, portSubscribes)
         elm = initializingInstance.elmProxy = {
-          ports: elm.ports
+          ports: elm.ports,
+          hot: {
+            subscribe: initializingInstance.subscribe
+          }
         };
         initializingInstance = null;
         return elm;
@@ -160,9 +187,9 @@ if (module.hot) {
       var m = getPublicModule(instance.path)
       var elm;
       if (m) {
-        var flags = Object.assign({}, instance.flags, {
-          __hotSwapped: true
-        })
+        instance.dispatch('swap')
+
+        var flags = instance.flags
         if (instance.isFullscreen) {
           elm = m.fullscreen(flags);
         } else {
@@ -258,7 +285,7 @@ if (module.hot) {
           try {
             result = view(model);
           } catch (e) {
-            throw new Error('[elm-hot] Hot-swapping is not possible, please reload page.');
+            throw new Error('[elm-hot] Hot-swapping is not possible, please reload page. Error: ' + e.message);
           }
         } else {
           result = view(model);
