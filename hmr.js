@@ -107,7 +107,7 @@ if (module.hot) {
     function registerInstance(domNode, flags, path, portSubscribes) {
       var id = getId();
 
-      const instance = {
+      var instance = {
         id: id,
         path: path,
         domNode: domNode,
