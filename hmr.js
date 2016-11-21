@@ -36,8 +36,6 @@ if (module.hot) {
       };
     }
 
-    var programWithFlags = _elm_lang$html$Html$programWithFlags;
-
     var instances = module.hot.data
       ? module.hot.data.instances || {}
       : {};
@@ -149,7 +147,7 @@ if (module.hot) {
         instance.callbacks.forEach(function (cb) {
           cb(event, {
             flags: instance.flags,
-            state: instance.lastState
+            state: instance.lastState._0
           })
         })
       }
@@ -280,46 +278,51 @@ if (module.hot) {
     }
 
     // hook program creation
-    _elm_lang$html$Html$programWithFlags = function (impl) {
-      var instance = null;
-      var swapping = null;
-      var tryFirstRender = !!swappingInstance;
-      var isInitialRender = true;
+    var initialize = _elm_lang$core$Native_Platform.initialize
+    _elm_lang$core$Native_Platform.initialize = function (stateTuple, update, view, renderer) {
+      var instance = initializingInstance
+      var swapping = swappingInstance
+      var tryFirstRender = !!swappingInstance
+      var isInitialRender = true
 
-      //var makeRenderer = program.renderer;
-      var init = impl.init;
-      var view = impl.view;
-      impl.init = function () {
-        instance = initializingInstance
-        swapping = swappingInstance
-        var result = init.apply(this, arguments);
-        if (swapping) {
-          result._0 = swapping.lastState;
+
+      var debuggerEnabled = isDebuggerState(stateTuple._0)
+      if (swappingInstance) {
+        if (debuggerEnabled) {
+          stateTuple._0.state = swappingInstance.lastState
+        } else {
+          stateTuple._0 = swappingInstance.lastState
         }
-        return result;
-      };
-      impl.view = function(model) {
+      }
+      return initialize(stateTuple, update, function (model) {
         var result;
         // first render may fail if shape of model changed too much
         if (tryFirstRender) {
-          tryFirstRender = false;
+          tryFirstRender = false
           try {
-            result = view(model);
+            result = view(model)
           } catch (e) {
-            throw new Error('[elm-hot] Hot-swapping is not possible, please reload page. Error: ' + e.message);
+            throw new Error('[elm-hot] Hot-swapping is not possible, please reload page. Error: ' + e.message)
           }
         } else {
-          result = view(model);
+          result = view(model)
         }
         if (instance) {
-          instance.lastState = model;
+          if (isDebuggerState(model)) {
+            instance.lastState = model.state
+          } else {
+            instance.lastState = model
+          }
         } else {
-          instance = swapping;
+          instance = swapping
         }
-        isInitialRender = false;
-        return result;
-      };
-      return programWithFlags(impl)
+        isInitialRender = false
+        return result
+      }, renderer)
+
+      function isDebuggerState(state) {
+        return state && typeof state === 'object' && typeof state.isDebuggerOpen === 'boolean' && 'state' in state
+      }
     }
 
     // hook process creation

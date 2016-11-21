@@ -7,7 +7,7 @@ var readFileSync = require('fs').readFileSync;
 var path = require('path');
 
 var hmrScript = readFileSync(__dirname + '/hmr.js');
-var injectBeforeCode = 'var _user$project';
+var injectBeforeCode = 'var _elm_lang$html$Html_Events$Options = F2(';
 var initBeforeCode = 'if (typeof define === "function" && define[\'amd\'])';
 
 var loaderUtils = require("loader-utils");
