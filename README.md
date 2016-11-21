@@ -7,8 +7,12 @@ This loader injects [HMR](https://webpack.github.io/docs/hot-module-replacement.
 
 ## Change Log
 
+### 0.5.0
+* Elm 0.18 support
+
 ### 0.4.0
 * Add event callback
+see https://github.com/fluxxu/elm-hot-loader/issues/18
 
 ### 0.3.3
 * Better elm-lang/websocket support (thanks to @rundis)
