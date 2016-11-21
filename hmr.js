@@ -147,7 +147,9 @@ if (module.hot) {
         instance.callbacks.forEach(function (cb) {
           cb(event, {
             flags: instance.flags,
-            state: instance.lastState._0
+            state: '_0' in instance.lastState 
+              ? instance.lastState._0 //debugger state
+              : instance.lastState //normal state
           })
         })
       }
