@@ -7,7 +7,8 @@ var readFileSync = require('fs').readFileSync;
 var path = require('path');
 
 var hmrScript = readFileSync(__dirname + '/hmr.js');
-var injectBeforeCode = 'if (typeof define === "function" && define[\'amd\'])';
+var injectBeforeCode = 'var _user$project';
+var initBeforeCode = 'if (typeof define === "function" && define[\'amd\'])';
 
 var loaderUtils = require("loader-utils");
 module.exports = function(content) {
@@ -29,8 +30,15 @@ function wrap(input, content, callback) {
   if (injectPos === -1) {
     return callback(new Error('elm-hot-loader is incompatible with this version of Elm.'));
   } else {
-    return callback(null, content.slice(0, injectPos) + '\r\n\r\n' +
+    content = content.slice(0, injectPos) + '\r\n\r\n' +
       hmrScript + '\r\n\r\n' +
-      content.slice(injectPos));
+      content.slice(injectPos)
+
+    var initPos = content.indexOf(initBeforeCode);
+    content = content.slice(0, initPos) + '\r\n\r\n' +
+      '_elm_hot_loader_init(Elm)' + '\r\n\r\n' +
+      content.slice(initPos)
+
+    return callback(null, content);
   }
 }

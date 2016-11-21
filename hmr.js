@@ -1,8 +1,18 @@
 //////////////////// HMR BEGIN ////////////////////
+var _elm_hot_loader_init = function () {}
 if (module.hot) {
   (function(Elm) {
     "use strict";
-    
+
+    var version = detectElmVersion()
+    console.log('[elm-hot] Elm version:', version)
+
+    if (version === '0.17') {
+      throw new Error('[elm-hot] Please use elm-hot-loader@0.4.x')
+    } else if (version !== '0.18') {
+      throw new Error('[elm-hot] Elm version not supported.')
+    }
+        
     //polyfill for IE: https://github.com/fluxxu/elm-hot-loader/issues/16
     if (typeof Object.assign != 'function') {
       Object.assign = function(target) {
@@ -26,20 +36,13 @@ if (module.hot) {
       };
     }
 
-    var programWithFlags;
-    
-    try {
-      programWithFlags = _elm_lang$virtual_dom$VirtualDom$programWithFlags;
-    } catch (_) {
-      console.warn('[elm-hot] Hot-swapping disabled because VirtualDom module was not found.')
-      return;
-    }
+    var programWithFlags = _elm_lang$html$Html$programWithFlags;
 
     var instances = module.hot.data
       ? module.hot.data.instances || {}
       : {};
     var uid = module.hot.data
-      ? module.hot.uid || 0
+      ? module.hot.data.uid || 0
       : 0;
 
     var cancellers = [];
@@ -72,6 +75,23 @@ if (module.hot) {
       return ++uid;
     }
 
+    function detectElmVersion() {
+      try {
+        if (_elm_lang$core$Native_Platform.initialize) {
+          return '0.18'
+        }
+      } catch (_) {}
+
+      try {
+        // 0.17 function programWithFlags(details)
+        if (_elm_lang$virtual_dom$VirtualDom$programWithFlags.length === 1) {
+          return '0.17'
+        }
+      } catch (_) {}
+
+      return 'unknown'
+    }
+
     function findPublicModules(parent, path) {
       var modules = [];
       for (var key in parent) {
@@ -89,7 +109,7 @@ if (module.hot) {
       return modules;
     }
 
-    function getPublicModule(path) {
+    function getPublicModule(Elm, path) {
       var parts = path.split('.');
       var parent = Elm;
       for (var i = 0; i < parts.length; ++i) {
@@ -173,7 +193,7 @@ if (module.hot) {
       }
     }
 
-    function swap(instance) {
+    function swap(Elm, instance) {
       console.log('[elm-hot] Hot-swapping module: ' + instance.path)
 
       swappingInstance = instance;
@@ -184,7 +204,7 @@ if (module.hot) {
         domNode.removeChild(domNode.lastChild);
       }
 
-      var m = getPublicModule(instance.path)
+      var m = getPublicModule(Elm, instance.path)
       var elm;
       if (m) {
         instance.dispatch('swap')
@@ -260,24 +280,25 @@ if (module.hot) {
     }
 
     // hook program creation
-    _elm_lang$virtual_dom$VirtualDom$programWithFlags = function () {
-      var instance = initializingInstance;
-      var swapping = swappingInstance;
+    _elm_lang$html$Html$programWithFlags = function (impl) {
+      var instance = null;
+      var swapping = null;
       var tryFirstRender = !!swappingInstance;
       var isInitialRender = true;
-      var program = programWithFlags.apply(this, arguments);
 
       //var makeRenderer = program.renderer;
-      var init = program.init;
-      var view = program.view;
-      program.init = function () {
+      var init = impl.init;
+      var view = impl.view;
+      impl.init = function () {
+        instance = initializingInstance
+        swapping = swappingInstance
         var result = init.apply(this, arguments);
         if (swapping) {
           result._0 = swapping.lastState;
         }
         return result;
       };
-      program.view = function(model) {
+      impl.view = function(model) {
         var result;
         // first render may fail if shape of model changed too much
         if (tryFirstRender) {
@@ -298,7 +319,7 @@ if (module.hot) {
         isInitialRender = false;
         return result;
       };
-      return program;
+      return programWithFlags(impl)
     }
 
     // hook process creation
@@ -320,26 +341,28 @@ if (module.hot) {
       return def;
     };
 
-    // swap instances
-    var removedInstances = [];
-    for (var id in instances) {
-      var instance = instances[id]
-      if (instance.domNode.parentNode) {
-        swap(instance);
-      } else {
-        removedInstances.push(id);
+    _elm_hot_loader_init = function (Elm) {
+      // swap instances
+      var removedInstances = [];
+      for (var id in instances) {
+        var instance = instances[id]
+        if (instance.domNode.parentNode) {
+          swap(Elm, instance);
+        } else {
+          removedInstances.push(id);
+        }
       }
+
+      removedInstances.forEach(function (id) {
+        delete instance[id];
+      });
+
+      // wrap all public modules
+      var publicModules = findPublicModules(Elm);
+      publicModules.forEach(function (m) {
+        wrapPublicModule(m.path, m.module);
+      });
     }
-
-    removedInstances.forEach(function (id) {
-      delete instance[id];
-    });
-
-    // wrap all public modules
-    var publicModules = findPublicModules(Elm);
-    publicModules.forEach(function (m) {
-      wrapPublicModule(m.path, m.module);
-    });
   })(Elm);
 }
 //////////////////// HMR END ////////////////////
