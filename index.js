@@ -7,8 +7,7 @@ var readFileSync = require('fs').readFileSync;
 var path = require('path');
 
 var hmrScript = readFileSync(__dirname + '/hmr.js');
-var injectBeforeCode = 'var _elm_lang$html$Html_Events$Options = F2(';
-var initBeforeCode = 'if (typeof define === "function" && define[\'amd\'])';
+var injectBeforeCode = 'if (typeof define === "function" && define[\'amd\'])';
 
 var loaderUtils = require("loader-utils");
 module.exports = function(content) {
@@ -32,12 +31,8 @@ function wrap(input, content, callback) {
   } else {
     content = content.slice(0, injectPos) + '\r\n\r\n' +
       hmrScript + '\r\n\r\n' +
-      content.slice(injectPos)
-
-    var initPos = content.indexOf(initBeforeCode);
-    content = content.slice(0, initPos) + '\r\n\r\n' +
       '_elm_hot_loader_init(Elm)' + '\r\n\r\n' +
-      content.slice(initPos)
+      content.slice(injectPos)
 
     return callback(null, content);
   }
