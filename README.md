@@ -38,6 +38,23 @@ $ npm install --save elm-webpack-loader elm-hot-loader
 
 In your `webpack.config.js` file:
 
+With webpack 2+
+```js
+module.exports = {
+  module: {
+    rules: [{
+      test: /\.elm$/,
+      exclude: [/elm-stuff/, /node_modules/],
+      use: [
+        'elm-hot-loader',
+        'elm-webpack-loader',
+      ]
+    }]
+  }
+};
+```
+
+With webpack 1
 ```js
 module.exports = {
   module: {
@@ -52,12 +69,26 @@ module.exports = {
 
 If you don't use elm-webpack-loader to compile Elm, just make sure webpack uses elm-hot to load your compiled js file.
 Add this to your webpack config file:
+
+With webpack 2+
+```
+rules: [
+  // ...
+  {
+      test: /[YOUR_COMPILED_JS_FILE_NAME_HERE]\.js$/,
+      loader: 'elm-hot-loader',
+  }
+  // ...
+]
+```
+
+With webpack 1
 ```
 loaders: [
   // ...
   {
       test: /[YOUR_COMPILED_JS_FILE_NAME_HERE]\.js$/,
-      loader: 'elm-hot'
+      loader: 'elm-hot',
   }
   // ...
 ]
