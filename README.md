@@ -67,7 +67,6 @@ module.exports = {
 };
 ```
 
-
 If you don't use elm-webpack-loader to compile Elm, just make sure webpack uses elm-hot to load your compiled js file.
 Add this to your webpack config file:
 
